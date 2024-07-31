@@ -13,6 +13,7 @@ app.use(
     pathRewrite: {
       "^/api": "/uapi/domestic-stock/v1/ranking/fluctuation", // '/api'를 실제 API 경로로 변경
     },
+    selfHandleResponse: true, // 응답을 직접 처리하도록 설정 (이거 안하면 proxy로 요청 전달해서 결과값을 바로반환함 (전처리 못해줌))
     on: {
       proxyReq: (proxyReq, req, res) => {
         const queryParams = new URL(req.url, `http://${req.headers.host}`)
@@ -41,7 +42,6 @@ app.use(
 
         // 파라미터를 쿼리 문자열로 변환
         const queryString = new URLSearchParams(params).toString();
-        // console.log("queryString : ", queryString, "\n");
 
         // 프록시 요청 URL 업데이트
         proxyReq.path = `/uapi/domestic-stock/v1/ranking/fluctuation?${queryString}`;
@@ -66,10 +66,8 @@ app.use(
         });
 
         proxyRes.on("end", () => {
-          console.log("Response Data:", body); // 응답 로그 확인
           try {
             const data = JSON.parse(body);
-            console.log(data);
             // 응답 데이터에서 필요한 필드만 추출
             const extractedData = data.output.map((item) => ({
               data_rank: item.data_rank,
@@ -80,9 +78,9 @@ app.use(
               prdy_ctrt: item.prdy_ctrt,
             }));
 
+            // console.log("Extracted Data:", extractedData);
             // 클라이언트로 추출된 데이터 전달
             res.json(extractedData);
-            console.log("Extracted Data:", extractedData);
           } catch (e) {
             console.error("Error parsing JSON response:", e);
             res.status(500).send("Internal Server Error");
