@@ -28,7 +28,7 @@ async function fetchDataFromRedisWithKey(key) {
 
 async function saveDataToRedis(key, value) {
   try {
-    await redisClient.set(key, value);
+    await redisClient.set(key, value, { EX: 5 });
   } catch (error) {
     console.error("Error saving data to Redis:", error);
   }

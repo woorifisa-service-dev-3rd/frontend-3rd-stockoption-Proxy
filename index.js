@@ -21,7 +21,7 @@ const proxyMiddleware = createProxyMiddleware({
   selfHandleResponse: true, // 응답을 직접 처리하도록 설정 (이거 안하면 proxy로 요청 전달해서 결과값을 바로반환함 (전처리 못해줌))
   on: {
     proxyReq: (proxyReq, req, res) => {
-      console.log("onProxyReq called");
+      // console.log("onProxyReq called");
       const queryParams = new URL(req.url, `http://${req.headers.host}`)
         .searchParams;
 
@@ -51,10 +51,10 @@ const proxyMiddleware = createProxyMiddleware({
 
       const queryString = new URLSearchParams(params).toString();
       proxyReq.path = `/uapi/domestic-stock/v1/ranking/fluctuation?${queryString}`;
-      console.log("proxyReq.path:", proxyReq.path);
+      // console.log("proxyReq.path:", proxyReq.path);
     },
     proxyRes: (proxyRes, req, res) => {
-      console.log("onProxyRes called");
+      // console.log("onProxyRes called");
       let body = "";
       proxyRes.on("data", (chunk) => {
         body += chunk;
@@ -62,7 +62,7 @@ const proxyMiddleware = createProxyMiddleware({
 
       proxyRes.on("end", async () => {
         try {
-          console.log("Response body received");
+          // console.log("Response body received");
           const data = JSON.parse(body);
           const extractedData = data.output.map((item) => ({
             data_rank: item.data_rank,
@@ -76,7 +76,7 @@ const proxyMiddleware = createProxyMiddleware({
           const queryParams = new URL(req.url, `http://${req.headers.host}`)
             .searchParams;
           const redisKey = `api:${queryParams.toString()}`;
-          console.log("Saving to Redis, key:", redisKey);
+          // console.log("Saving to Redis, key:", redisKey);
 
           await saveDataToRedis(redisKey, JSON.stringify(extractedData));
           res.json(extractedData);
@@ -98,7 +98,7 @@ app.use("/api", async (req, res, next) => {
   const queryParams = new URL(req.url, `http://${req.headers.host}`)
     .searchParams;
   const redisKey = `api:${queryParams.toString()}`;
-  console.log("Checking Redis for key:", redisKey);
+  // console.log("Checking Redis for key:", redisKey);
 
   try {
     const cachedData = await fetchDataFromRedisWithKey(redisKey);
